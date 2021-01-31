@@ -1,14 +1,35 @@
 import cv2
-import sys
+import os
+from platform import system as operating_system
+
 
 faceCascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+video_capture = None
 
-# for camera, It doesn't work on MacOS cause of security features
-# video_capture = cv2.VideoCapture(0)
+if operating_system() != 'Darwin': # for the macs
+    # for camera, It doesn't work on MacOS cause of security features
+    video_capture = cv2.VideoCapture(0)
+else:
+    import youtube_dl
+    from glob import glob
+    # Downloads a youtube video
+    
+    for i in glob('*.webm'):
+        os.remove(i)
 
-# hence we are using a new version
-video_capture = cv2.VideoCapture('linus.webm')
+    ydl_opts = {}
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        url = input('Enter a youtube URL, if not a valid one one will be provided')
+        try:
+            ydl.download([url])
+        except :
+            ydl.download(['https://www.youtube.com/watch?v=DXo2m_XlH4s'])
+    
+    
+    
+    video_capture = cv2.VideoCapture()
 
+print('begining loop you might have to alt tab out')
 while True:
     # Capture frame-by-frame
     ret, frame = video_capture.read()
