@@ -5,14 +5,15 @@ import cv2
 import youtube_dl
 from glob import glob
 
-def download():
-    try:
-        # attempts to download for the provided link
-        ydl.download([sys.argv[1]])
-    except :
-        # attempts to download a defaulted url
-        # its an LTT video
-        ydl.download(['https://www.youtube.com/watch?v=ZX7HnNd5PB4'])
+def download(x):
+    with x as ydl:
+        try:
+            # attempts to download for the provided link
+            ydl.download([sys.argv[1]])
+        except :
+            # attempts to download a defaulted url
+            # its an LTT video
+            ydl.download(['https://www.youtube.com/watch?v=ZX7HnNd5PB4'])
 
 def locate():
     '''finds a video file for analysis''''    
@@ -33,16 +34,15 @@ def locate():
         }
     
         # uses the options in "safe mode"
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:
-            # attempts to download a file
-            try:
-                download()
-            except :
-                # sometimes ssl fails this fixes that
-                import ssl
-                ssl._create_default_https_context = ssl._create_unverified_context
-                download()        
-        
+        # attempts to download a file
+        try:
+            download(youtube_dl.YoutubeDL(ydl_opts))
+        except :
+            # sometimes ssl fails this fixes that
+            import ssl
+            ssl._create_default_https_context = ssl._create_unverified_context
+            download(youtube_dl.YoutubeDL(ydl_opts))        
+    
         # returns a cv object
         return cv2.VideoCapture(f'vid.mp4')
 
