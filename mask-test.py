@@ -3,11 +3,11 @@ from datetime import datetime
 from video import locate
 
 # how many microseconds for a frame in 30fps
-thirty_fps_as_ms = 19900
+thirty_fps_as_ms = 32500
 # how many times its allowed to do a switch
-max_skip = 17999
+max_skip = thirty_fps_as_ms
 
-def get_curr_time():
+def get_current_time():
     '''returns the current secode + microsecond as microseconds'''
     return (datetime.now().second * 1_000_000) + (datetime.now().microsecond)
 
@@ -16,13 +16,15 @@ def main():
     # fetches the video through youtube-dl
     video_capture = locate()    
 
-    # builds a facial casscade from
+    # builds a facial cascade from
     cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
     # runs for every frame
+    count = -1
     while True:
+        count += 1
         # loops start time
-        start = get_curr_time()
+        start = get_current_time()
         # Capture frame-by-frame
         ret, frame = video_capture.read()
 
@@ -46,11 +48,12 @@ def main():
         for i in range(max_skip):
             # calculates the difference between the booted time
             # and the time at this point
-            dif = get_curr_time() - start
+            dif = get_current_time() - start
             # check if we are inside the desired range
             if dif < thirty_fps_as_ms:
                 continue
             else:
+                print(f'{count}\t{int((i/max_skip) * 100)}')
                 break
         
 

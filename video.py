@@ -16,7 +16,7 @@ def download(x):
             ydl.download(['https://www.youtube.com/watch?v=ZX7HnNd5PB4'])
 
 def locate():
-    '''finds a video file for analysis''''    
+    '''finds a video file for analysis'''  
     if operating_system() != 'Darwin' and len(sys.argv) < 1: # for the macs
         # for camera, It doesn't work on MacOS cause of security features
         return cv2.VideoCapture(0)
