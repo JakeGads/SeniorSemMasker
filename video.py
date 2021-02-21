@@ -4,6 +4,7 @@ import os
 import cv2
 import youtube_dl
 from glob import glob
+from ffpyplayer.player import MediaPlayer
 
 def download(x):
     with x as ydl:
@@ -13,7 +14,7 @@ def download(x):
         except :
             # attempts to download a defaulted url
             # its an LTT video
-            ydl.download(['https://www.youtube.com/watch?v=ZX7HnNd5PB4'])
+            ydl.download(['https://www.youtube.com/watch?v=S8kaMQuqnLM&t=81s'])
 
 def locate():
     '''finds a video file for analysis'''  

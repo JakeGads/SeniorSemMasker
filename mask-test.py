@@ -2,9 +2,11 @@ import cv2
 import numpy as np
 from datetime import datetime
 from video import locate
+from ffpyplayer.player import MediaPlayer
+import os
 
 # how many microseconds for a frame in 30fps
-thirty_fps_as_ms = 32500
+thirty_fps_as_ms = int(29.75 * 1000)
 # how many times its allowed to do a switch
 max_skip = thirty_fps_as_ms
 
@@ -13,7 +15,7 @@ def get_current_time():
     return (datetime.now().second * 1_000_000) + (datetime.now().microsecond)
 
 
-def overlay_transparent(background, overlay, x, y):
+def overlay(background, overlay, x, y):
 
     background_width = background.shape[1]
     background_height = background.shape[0]
@@ -46,22 +48,27 @@ def overlay_transparent(background, overlay, x, y):
     background[y:y+h, x:x+w] = (1.0 - mask) * background[y:y+h, x:x+w] + mask * overlay_image
 
     return background
-
+       
 def main():
     # fetches the video through youtube-dl
-    video_capture = locate()    
+    video_capture = locate()
+    audio_capture = MediaPlayer('vid.mp4')     
 
     # builds a facial cascade from
     cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-    img = cv2.imread('mask.png', cv2.IMREAD_UNCHANGED)
+    mask = cv2.imread('mask.png', cv2.IMREAD_UNCHANGED)
     # runs for every frame
     count = -1
+
     while True:
         count += 1
         # loops start time
         start = get_current_time()
         # Capture frame-by-frame
         ret, frame = video_capture.read()
+        
+        if not ret:
+            break
 
         # looks for faces in the frame
         faces = cascade.detectMultiScale(        
@@ -71,16 +78,14 @@ def main():
         )
 
         # Draw a rectangle around the faces
-        # TODO make this place an image instead
         for (x, y, w, h) in faces:
-            resized = cv2.resize(img, (int(w/1.4), int(h/1.4)), interpolation = cv2.INTER_AREA)
-            frame = overlay_transparent(frame, resized, int(x + w/7), int(y + h/3))
-            # cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 5)
-            
+            resized = cv2.resize(mask, (int(w/1.4), int(h/1.4)), interpolation = cv2.INTER_AREA)
+            frame = overlay(frame, resized, int(x + w/7), int(y + h/3))
+            #cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 5)
+            # Display the resulting frame
 
-        # Display the resulting frame
         cv2.imshow('Video', frame)
-        
+
         skip = 0 # the amount of skips
         for i in range(max_skip):
             # calculates the difference between the booted time
@@ -93,6 +98,10 @@ def main():
                 print(f'{count}\t{int((i/max_skip) * 100)}')
                 break
         
+        audio_frame, val = audio_capture.get_frame()
+        if val != 'eof' and audio_frame is not None:
+            #audio
+            img, t = audio_frame
 
         # quit button
         if cv2.waitKey(4) & 0xFF == ord('q'):
@@ -102,6 +111,8 @@ def main():
     video_capture.release()
     # clear the ram
     cv2.destroyAllWindows()
+    os.remove('vid.mp4')
+
 
 if __name__ == "__main__":
     main()
