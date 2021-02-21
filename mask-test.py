@@ -5,10 +5,11 @@ from video import locate
 from ffpyplayer.player import MediaPlayer
 import os
 
-# how many microseconds for a frame in 30fps
-thirty_fps_as_ms = int(29.75 * 1000)
-# how many times its allowed to do a switch
-max_skip = thirty_fps_as_ms
+# how many microseconds for a frame in (slightly less then) 30fps
+# we manually build in the skip becuase the face finding algorithm are variable 
+thirty_fps_as_ms = int(30.00 * 1000)
+
+
 
 def get_current_time():
     '''returns the current secode + microsecond as microseconds'''
@@ -52,10 +53,12 @@ def overlay(background, overlay, x, y):
 def main():
     # fetches the video through youtube-dl
     video_capture = locate()
+    # builds the audio caption
     audio_capture = MediaPlayer('vid.mp4')     
 
     # builds a facial cascade from
     cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    # a cv image of of a mask (large so it an be downward)
     mask = cv2.imread('mask.png', cv2.IMREAD_UNCHANGED)
     # runs for every frame
     count = -1
@@ -73,21 +76,34 @@ def main():
         # looks for faces in the frame
         faces = cascade.detectMultiScale(        
             cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY), # converts the frame to B/W 
-            scaleFactor=5, # large possibility
+            scaleFactor=2   , # strict so to avoid asmaller face size 
             minNeighbors=1 # very loose definition on what a face 
         )
 
-        # Draw a rectangle around the faces
+        # places image
         for (x, y, w, h) in faces:
+            # resized masks
             resized = cv2.resize(mask, (int(w/1.4), int(h/1.4)), interpolation = cv2.INTER_AREA)
+            # overlay the mask
             frame = overlay(frame, resized, int(x + w/7), int(y + h/3))
+            # debug (allows for for you to see the found faces)
             #cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 5)
             # Display the resulting frame
 
+
+        audio_frame, val = audio_capture.get_frame()
+        if val != 'eof' and audio_frame is not None:
+            #audio
+            img, t = audio_frame
+
+
+        # shows the frame
         cv2.imshow('Video', frame)
 
-        skip = 0 # the amount of skips
-        for i in range(max_skip):
+        # plays the audio
+        
+
+        for i in range(thirty_fps_as_ms):
             # calculates the difference between the booted time
             # and the time at this point
             dif = get_current_time() - start
@@ -95,14 +111,10 @@ def main():
             if dif < thirty_fps_as_ms:
                 continue
             else:
-                print(f'{count}\t{int((i/max_skip) * 100)}')
+                print(f'{count}\t{int((i/thirty_fps_as_ms) * 100)}')
                 break
         
-        audio_frame, val = audio_capture.get_frame()
-        if val != 'eof' and audio_frame is not None:
-            #audio
-            img, t = audio_frame
-
+        
         # quit button
         if cv2.waitKey(4) & 0xFF == ord('q'):
             break
@@ -111,6 +123,7 @@ def main():
     video_capture.release()
     # clear the ram
     cv2.destroyAllWindows()
+    # deletes the file
     os.remove('vid.mp4')
 
 
