@@ -9,12 +9,9 @@ import os
 # we manually build in the skip becuase the face finding algorithm are variable 
 thirty_fps_as_ms = int(30.00 * 1000)
 
-
-
 def get_current_time():
     '''returns the current secode + microsecond as microseconds'''
     return (datetime.now().second * 1_000_000) + (datetime.now().microsecond)
-
 
 def overlay(background, overlay, x, y):
 
@@ -50,9 +47,9 @@ def overlay(background, overlay, x, y):
 
     return background
        
-def main():
+def main(pasted:str=""):
     # fetches the video through youtube-dl
-    video_capture = locate()
+    video_capture = locate(pasted)
     # builds the audio caption
     audio_capture = MediaPlayer('vid.mp4')     
 
@@ -111,7 +108,8 @@ def main():
             if dif < thirty_fps_as_ms:
                 continue
             else:
-                print(f'{count}\t{int((i/thirty_fps_as_ms) * 100)}')
+                # commented out for debugging purposes
+                # print(f'{count}\t{int((i/thirty_fps_as_ms) * 100)}')
                 break
         
         

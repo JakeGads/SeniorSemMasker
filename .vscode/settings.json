@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/jakeg/source/repo/SeniorSemMasker/env/bin/python3",
+    "python.pythonPath": "env/bin/python",
     "cSpell.words": [
         "webm"
     ]
