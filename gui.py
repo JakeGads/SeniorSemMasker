@@ -22,7 +22,7 @@ if __name__ == "__main__":
     # Create the menu
     menu = QMenu()
 
-    action = QAction("Start Masked Video") 
+    action = QAction("Start Masked Video from copied URL") 
     action.triggered.connect(play_video)
     menu.addAction(action)
 
